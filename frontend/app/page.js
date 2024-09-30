@@ -1,12 +1,12 @@
 'use client'
 import { useRef, useState } from "react";
 import styles from "./page.module.css";
-import { Button } from "@mui/material";
+import { Box, Button, Grid2, Input, Slider, Typography } from "@mui/material";
 
 export default function Home() {
   let [location, setLocation] = useState("");
   let [trees, setTrees] = useState([]);
-  let gridSize = 5;
+  let [gridSize, setGridSize] = useState(20);
   const running = useRef(null);
 
   let setup = () => {
@@ -14,7 +14,8 @@ export default function Home() {
     fetch("http://localhost:8000/simulations", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-    }).then(resp => resp.json())
+      body: JSON.stringify({ dim: [gridSize, gridSize] })
+  }).then(resp => resp.json())
     .then(data => {
       setLocation(data["Location"]);
       setTrees(data["trees"]);
@@ -34,6 +35,9 @@ export default function Home() {
   const handleStop = () => {
     clearInterval(running.current);
   }
+  const handleGridSizeSliderChange = (event, newValue) => {
+    setGridSize(newValue);
+  };
 
   let burning = trees.filter(t => t.status == "burning").length;
 
@@ -54,6 +58,26 @@ export default function Home() {
           Stop
         </Button>
       </div>
+      <Box sx={{ width: 250 }}>
+        <Typography id="input-slider" gutterBottom>
+          Grid size
+        </Typography>
+        <Grid2 container spacing={2} alignItems="center">
+          <Grid2 sx>
+            <Slider sx={{ width: 190 }}
+              value={gridSize} 
+              onChange={handleGridSizeSliderChange}
+              defaultValue={20} step={10} marks min={10} max={40} valueLabelDisplay="auto" />
+          </Grid2>
+          <Grid2>
+            <Input
+              value={gridSize}
+              inputProps={{step: 10, min: 10, max: 40, type: 'number'}} 
+            />
+          </Grid2>
+        </Grid2>
+      </Box>
+
       <svg width="500" height="500" xmlns="http://www.w3.org/2000/svg" style={{backgroundColor:"white"}}>
       {
         trees.map(tree => 
